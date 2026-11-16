@@ -1,0 +1,8 @@
+{
+  "disease_threshold": 0.4438092112541199,
+  "threshold_strategy": "single_binary_threshold",
+  "validation_accuracy_percent": 80.0,
+  "validation_balanced_accuracy_percent": 78.15,
+  "validation_roc_auc": 0.7983,
+  "notes": "Threshold selected on the 45-image validation split by balanced accuracy, then F1, then closeness to 0.5. Local folder labels are unverified; this is not a clinical accuracy claim."
+}

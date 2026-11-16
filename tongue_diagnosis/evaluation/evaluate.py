@@ -30,6 +30,7 @@ RANDOM_SEED = 42
 TEST_SPLIT = 0.20
 MODEL_PATH = PROJECT_ROOT / "training" / "saved_model" / "best_model.h5"
 LABEL_MAP_PATH = PROJECT_ROOT / "training" / "saved_model" / "label_map.json"
+PREDICTION_CONFIG_PATH = PROJECT_ROOT / "training" / "saved_model" / "prediction_config.json"
 RAW_DIR = PROJECT_ROOT / "data" / "raw"
 PROCESSED_DIR = PROJECT_ROOT / "data" / "processed"
 SEGMENTED_DIR = PROJECT_ROOT / "data" / "segmented"
@@ -81,6 +82,20 @@ def _load_segmented_arrays(label_map: dict[str, int]) -> tuple[np.ndarray, np.nd
     return np.array(images, dtype=np.float32), np.array(labels, dtype=np.int32)
 
 
+def _load_disease_threshold() -> float:
+    if not PREDICTION_CONFIG_PATH.exists():
+        print("[Evaluate] Prediction config not found. Using default threshold 0.5")
+        return 0.5
+
+    with open(PREDICTION_CONFIG_PATH, "r", encoding="utf-8") as file_obj:
+        config = json.load(file_obj)
+
+    threshold = float(config.get("disease_threshold", 0.5))
+    threshold = min(max(threshold, 0.01), 0.99)
+    print(f"[Evaluate] Disease threshold: {threshold}")
+    return threshold
+
+
 def main() -> None:
     print("\n" + "=" * 60)
     print("TONGUE DIAGNOSIS MODEL — EVALUATION")
@@ -96,6 +111,7 @@ def main() -> None:
 
     class_names = [name for name, _ in sorted(label_map.items(), key=lambda item: item[1])]
     print(f"[Evaluate] Classes: {class_names}")
+    disease_threshold = _load_disease_threshold()
 
     _ensure_segmented_data()
     X, y = _load_segmented_arrays(label_map)
@@ -117,6 +133,7 @@ def main() -> None:
         y_test,
         class_names=class_names,
         save_dir=EVALUATION_DIR,
+        disease_threshold=disease_threshold,
     )
 
     print("\nEvaluation complete.")

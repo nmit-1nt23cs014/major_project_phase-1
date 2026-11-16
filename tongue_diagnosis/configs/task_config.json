@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "task_id": "tongue_based_gi_disease_prediction",
+  "intended_task": "Tongue-based gastrointestinal disease prediction",
+  "task_status": "unverified",
+  "clinical_claims_permitted": false,
+  "status_reason": "The active local dataset has no verified clinical GI-disease labels, patient identifiers, source documentation, or licence metadata.",
+  "active_dataset_id": "local_tongue_images_unverified",
+  "observed_class_folders": {
+    "Normal": {
+      "current_label": "Normal",
+      "source_label_status": "unverified"
+    },
+    "GI_Disease": {
+      "current_label": "GI_Disease",
+      "source_label_status": "unverified",
+      "filename_pattern_observed": "diabetes_*"
+    }
+  },
+  "source_folder_hints": [
+    "data/source_datasets/Kaggle_Dataset_2/data Dr fiiuzzy/Diabetes",
+    "data/source_datasets/Kaggle_Dataset_2/data Dr fiiuzzy/Healthy",
+    "data/source_datasets/Kaggle_Dataset_2/data Dr fiiuzzy/Pre Diabetes"
+  ],
+  "evidence_required_for_gi_task": [
+    "Source dataset documentation and licence",
+    "Clinical label definition for each sample",
+    "Evidence that positive cases are gastrointestinal disease cases, with appropriate controls",
+    "Patient-level identifiers or a documented patient-disjoint split"
+  ],
+  "exploratory_use_if_source_labels_are_verified": "A diabetes-versus-healthy experiment may be run separately, but it must not be reported or deployed as GI-disease prediction."
+}

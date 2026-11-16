@@ -21,6 +21,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 from sklearn.utils.class_weight import compute_class_weight
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -196,6 +197,112 @@ def _plot_training_history(history: tf.keras.callbacks.History) -> None:
     print(f"\n[Train] Training curves saved to: {save_path}")
 
 
+def _find_best_screening_threshold(
+    y_true: np.ndarray,
+    disease_scores: np.ndarray,
+) -> tuple[float, dict[str, float]]:
+    """
+    Pick the sigmoid cutoff that best detects GI disease on validation data.
+    """
+    best_threshold = 0.5
+    best_metrics: dict[str, float] = {}
+    best_key: tuple[float, float, float] | None = None
+
+    for threshold in np.linspace(0.05, 0.95, 181):
+        y_pred = (disease_scores >= threshold).astype(int)
+        metrics = {
+            "accuracy": accuracy_score(y_true, y_pred),
+            "precision": precision_score(y_true, y_pred, zero_division=0),
+            "recall": recall_score(y_true, y_pred, zero_division=0),
+            "f1_score": f1_score(y_true, y_pred, zero_division=0),
+        }
+        key = (metrics["f1_score"], metrics["accuracy"], metrics["recall"])
+        if best_key is None or key > best_key:
+            best_key = key
+            best_threshold = float(threshold)
+            best_metrics = metrics
+
+    return best_threshold, best_metrics
+
+
+def _find_best_balanced_threshold(
+    y_true: np.ndarray,
+    disease_scores: np.ndarray,
+) -> tuple[float, dict[str, float]]:
+    """
+    Pick a stricter threshold that reduces false-positive disease labels.
+    """
+    best_threshold = 0.5
+    best_metrics: dict[str, float] = {}
+    best_key: tuple[float, float, float] | None = None
+
+    for threshold in np.linspace(0.05, 0.95, 181):
+        y_pred = (disease_scores >= threshold).astype(int)
+        tn, fp, fn, tp = confusion_matrix(y_true, y_pred, labels=[0, 1]).ravel()
+        specificity = tn / (tn + fp) if (tn + fp) else 0.0
+        recall = tp / (tp + fn) if (tp + fn) else 0.0
+        balanced_accuracy = (specificity + recall) / 2.0
+        metrics = {
+            "accuracy": accuracy_score(y_true, y_pred),
+            "precision": precision_score(y_true, y_pred, zero_division=0),
+            "recall": recall,
+            "specificity": specificity,
+            "f1_score": f1_score(y_true, y_pred, zero_division=0),
+            "balanced_accuracy": balanced_accuracy,
+        }
+        key = (balanced_accuracy, metrics["accuracy"], metrics["specificity"])
+        if best_key is None or key > best_key:
+            best_key = key
+            best_threshold = float(threshold)
+            best_metrics = metrics
+
+    return best_threshold, best_metrics
+
+
+def _save_prediction_config(model: tf.keras.Model, X_val: np.ndarray, y_val: np.ndarray) -> None:
+    """Save the calibrated disease threshold used by the Streamlit app."""
+    disease_scores = model.predict(X_val, verbose=0).flatten()
+    normal_threshold, screening_metrics = _find_best_screening_threshold(y_val, disease_scores)
+    disease_threshold, disease_metrics = _find_best_balanced_threshold(y_val, disease_scores)
+
+    config = {
+        "normal_threshold": round(normal_threshold, 4),
+        "disease_threshold": round(max(disease_threshold, normal_threshold), 4),
+        "threshold_strategy": "two_zone_validation_calibration",
+        "validation_screening_recall_percent_at_normal_threshold": round(
+            screening_metrics["recall"] * 100.0, 2
+        ),
+        "validation_binary_accuracy_percent_at_disease_threshold": round(
+            disease_metrics["accuracy"] * 100.0, 2
+        ),
+        "validation_binary_recall_percent_at_disease_threshold": round(
+            disease_metrics["recall"] * 100.0, 2
+        ),
+        "validation_normal_specificity_percent_at_disease_threshold": round(
+            disease_metrics["specificity"] * 100.0, 2
+        ),
+        "notes": (
+            "Scores below normal_threshold are shown as Normal. Scores between normal_threshold "
+            "and disease_threshold are shown as Borderline / Retake Recommended. Scores above "
+            "disease_threshold are shown as Potential GI Disease Detected."
+        ),
+    }
+
+    config_path = MODEL_SAVE_DIR / "prediction_config.json"
+    with open(config_path, "w", encoding="utf-8") as file_obj:
+        json.dump(config, file_obj, indent=2)
+
+    print(f"[Train] Prediction config saved to: {config_path}")
+    print(f"[Train] Calibrated normal threshold: {normal_threshold:.4f}")
+    print(f"[Train] Calibrated disease threshold: {disease_threshold:.4f}")
+    print(
+        "[Train] Threshold metrics: "
+        f"screening_recall={config['validation_screening_recall_percent_at_normal_threshold']}%, "
+        f"disease_threshold_accuracy={config['validation_binary_accuracy_percent_at_disease_threshold']}%, "
+        f"disease_threshold_specificity={config['validation_normal_specificity_percent_at_disease_threshold']}%"
+    )
+
+
 def train():
     """Run the full training flow."""
     print("\n" + "=" * 60)
@@ -245,6 +352,7 @@ def train():
     _plot_training_history(history)
     best_model = load_saved_model(MODEL_SAVE_DIR / "best_model.h5")
     evaluation = best_model.evaluate(val_gen, verbose=0, return_dict=True)
+    _save_prediction_config(best_model, X_val, y_val)
 
     print("\n" + "=" * 60)
     print("TRAINING COMPLETE")

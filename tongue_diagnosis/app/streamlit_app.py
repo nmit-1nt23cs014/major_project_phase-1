@@ -68,26 +68,6 @@ _html(
     [data-testid="stFileUploader"] *{ color: #8899AA !important; }
     [data-testid="stFileUploader"] small { color: #4A5568 !important; }
 
-    /* -- metrics --------------------------------------------------------- */
-    [data-testid="stMetric"]        { background: #111827;
-                                      border: 1px solid #1F2D40;
-                                      border-radius: 10px;
-                                      padding: 1rem !important; }
-    [data-testid="stMetricLabel"]   { color: #8899AA !important;
-                                      font-size: 0.7rem !important;
-                                      text-transform: uppercase;
-                                      letter-spacing: .1em; }
-    [data-testid="stMetricValue"]   { color: #00C9A7 !important;
-                                      font-family: 'Syne', sans-serif !important;
-                                      font-size: 1.8rem !important;
-                                      font-weight: 800 !important; }
-
-    /* -- progress bar ---------------------------------------------------- */
-    [data-testid="stProgress"] > div { background: #1F2D40 !important;
-                                        border-radius: 99px !important; }
-    [data-testid="stProgress"] > div > div { background: #00C9A7 !important;
-                                              border-radius: 99px !important; }
-
     /* -- image captions -------------------------------------------------- */
     .stImage p, .stImage figcaption { color: #4A5568 !important;
                                       font-size: 0.68rem !important;
@@ -124,6 +104,15 @@ def load_label_map():
     if not os.path.exists(path):
         return {"Normal": 0, "GI_Disease": 1}
     with open(path) as f:
+        return json.load(f)
+
+
+@st.cache_data(show_spinner=False)
+def load_prediction_config():
+    path = os.path.join(ROOT, "training", "saved_model", "prediction_config.json")
+    if not os.path.exists(path):
+        return {"disease_threshold": 0.5}
+    with open(path, encoding="utf-8") as f:
         return json.load(f)
 
 
@@ -182,7 +171,7 @@ _html(
             border-radius:99px;
             border:1px solid #00856F;
             margin-bottom:1.4rem;
-        ">AI-Powered Medical Screening Tool</span>
+        ">Exploratory Image Classifier</span>
 
         <h1 style="
             font-family:'Syne',sans-serif;
@@ -206,8 +195,8 @@ _html(
             margin:0 auto;
             line-height:1.65;
         ">
-            Upload a tongue image to screen for gastrointestinal disease
-            indicators using deep&nbsp;learning image analysis.
+            Upload a tongue image to compare it with the image classes used to train
+            this research prototype.
         </p>
 
     </div>
@@ -269,7 +258,7 @@ if model is None:
 _section_label("Step 1 -- Upload Image")
 
 uploaded_file = st.file_uploader(
-    label="",
+    label="Upload tongue image",
     type=["jpg", "jpeg", "png"],
     help="Frontal tongue photo. Ensure even lighting. JPG or PNG.",
     label_visibility="collapsed",
@@ -321,23 +310,23 @@ if uploaded_file is not None:
         with st.spinner("Running analysis..."):
             result = predict_single(model, segmented)
 
-        label = result["label"]
-        confidence = result["confidence"]
-        raw_score = result["raw_score"]
+        # Derive the displayed class from the raw model output so a cached
+        # older predict_single implementation cannot reintroduce Borderline.
+        raw_score = float(result.get("raw_score", float(result["disease_probability"]) / 100.0))
+        threshold = float(load_prediction_config().get("disease_threshold", 0.5))
+        result_type = "disease" if raw_score >= threshold else "normal"
 
         # -- RESULT CARD ----------------------------------------------------
-        _section_label("Step 3 -- Diagnosis Result")
+        _section_label("Step 3 -- Model Result")
 
-        is_normal = label == "Normal"
-        accent_colour = "#00C9A7" if is_normal else "#FF4D6D"
-        card_bg = "#041F1B" if is_normal else "#1A0A0F"
-        result_heading = "Normal" if is_normal else "Potential GI Disease Detected"
-        result_body = (
-            "No significant gastrointestinal indicators detected in tongue morphology."
-            if is_normal else
-            "Tongue morphology shows patterns consistent with gastrointestinal conditions. "
-            "Please consult a qualified physician for further evaluation."
-        )
+        if result_type == "normal":
+            accent_colour = "#00C9A7"
+            card_bg = "#041F1B"
+            result_heading = "Predicted class: Healthy"
+        else:
+            accent_colour = "#FF4D6D"
+            card_bg = "#1A0A0F"
+            result_heading = "Predicted class: GI Disease"
 
         _html(
             f"""
@@ -367,36 +356,9 @@ if uploaded_file is not None:
                     margin-bottom:.5rem;
                 ">{result_heading}</div>
 
-                <div style="
-                    font-family:'DM Sans',sans-serif;
-                    font-size:.9rem;
-                    color:#8899AA;
-                    line-height:1.6;
-                ">{result_body}</div>
             </div>
             """
         )
-
-        # -- CONFIDENCE ROW -------------------------------------------------
-        m_col, p_col = st.columns([1, 2], gap="large")
-
-        with m_col:
-            st.metric(label="Confidence", value=f"{confidence}%")
-
-        with p_col:
-            _html(
-                """
-                <p style="
-                    font-family:'DM Sans',sans-serif;
-                    font-size:.68rem;
-                    color:#8899AA;
-                    text-transform:uppercase;
-                    letter-spacing:.1em;
-                    margin:1rem 0 .5rem 0;
-                ">Prediction Confidence</p>
-                """
-            )
-            st.progress(int(confidence))
 
         # -- DISCLAIMER -----------------------------------------------------
         _html(

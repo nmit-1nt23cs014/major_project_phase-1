@@ -1,0 +1,251 @@
+{
+  "initialization": "MobileNetV2 pretrained on ImageNet, then adapted to Tongue-FLD train partition only",
+  "fine_tuning_task": "current local folder labels: Normal vs GI_Disease (labels unverified)",
+  "source_pretraining_samples": {
+    "train": 3600,
+    "validation": 401
+  },
+  "target_split": {
+    "train": 208,
+    "validation": 45
+  },
+  "target_validation_metrics_at_0_5": {
+    "accuracy": 0.6888888888888889,
+    "balanced_accuracy": 0.657563025210084,
+    "f1": 0.7586206896551724,
+    "roc_auc": 0.7121848739495799,
+    "tn": 9,
+    "fp": 8,
+    "fn": 6,
+    "tp": 22,
+    "support": 45
+  },
+  "target_validation_predictions": [
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3172.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.8352574110031128
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3283.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5159280300140381
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3353.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.34314796328544617
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3374.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5083754062652588
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3407.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.7007249593734741
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3416.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.4562104642391205
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3423.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.6037049889564514
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3441.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5304665565490723
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3449.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5395672917366028
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3468.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5362986922264099
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3470.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.6260327100753784
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3505.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5527788996696472
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3550.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5169240832328796
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3563.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5514631271362305
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3569.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.7401642799377441
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3639.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5137755274772644
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3651.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.4413504898548126
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3654.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.6160686612129211
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3695.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.6410865783691406
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3700.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.4166627824306488
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3709.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.6090986132621765
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3755.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.6297407150268555
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/diabetes_3839.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.6858141422271729
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/prediabetes_3543.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.4573626220226288
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/prediabetes_3565.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5752939581871033
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/prediabetes_3692.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.3739836812019348
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/prediabetes_3734.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5899640321731567
+    },
+    {
+      "relative_path": "data/raw/GI_Disease/prediabetes_3788.jpg",
+      "observed_label": "GI_Disease",
+      "disease_score": 0.5531883239746094
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3203.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.32170718908309937
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3224.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.5242133736610413
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3252.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.3598778545856476
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3301.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.509492039680481
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3336.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.5683264136314392
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3350.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.3735557496547699
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3424.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.3545736074447632
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3538.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.5851219296455383
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3594.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.5352434515953064
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3601.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.6611939072608948
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3613.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.36762022972106934
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3669.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.43101730942726135
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3680.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.5678539872169495
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3716.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.5320270657539368
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3786.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.48930609226226807
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3810.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.49417391419410706
+    },
+    {
+      "relative_path": "data/raw/Normal/healthy_3862.jpg",
+      "observed_label": "Normal",
+      "disease_score": 0.4839346706867218
+    }
+  ],
+  "note": "No test split used. This is an experimental candidate and was not promoted: the backed-up app checkpoint scored better on validation after threshold calibration. Local folder labels remain unverified."
+}

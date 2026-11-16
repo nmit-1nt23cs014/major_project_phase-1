@@ -1,5 +1,5 @@
 """
-Model Definition Module — Tongue Diagnosis Model (Phase 1)
+Model Definition Module — Tongue Diagnosis Model
 
 Architecture:
   - Base: MobileNetV2 pretrained on ImageNet
@@ -25,6 +25,7 @@ DROPOUT_RATE = 0.3
 DENSE_UNITS = 128
 LEARNING_RATE = 1e-4
 DEFAULT_MODEL_PATH = Path("training") / "saved_model" / "best_model.h5"
+DEFAULT_DISEASE_THRESHOLD = 0.4438092112541199
 
 
 def build_model(freeze_base: bool = True) -> tf.keras.Model:
@@ -79,12 +80,14 @@ def get_callbacks(checkpoint_dir: str | os.PathLike[str] = DEFAULT_MODEL_PATH.pa
     return [
         ModelCheckpoint(
             filepath=str(checkpoint_dir / "best_model.h5"),
-            monitor="val_accuracy",
+            monitor="val_auc",
+            mode="max",
             save_best_only=True,
             verbose=1,
         ),
         EarlyStopping(
-            monitor="val_loss",
+            monitor="val_auc",
+            mode="max",
             patience=10,
             restore_best_weights=True,
             verbose=1,
@@ -114,23 +117,43 @@ def load_saved_model(model_path: str | os.PathLike[str] = DEFAULT_MODEL_PATH) ->
             "Please run training/train.py first to train and save the model."
         )
 
-    model = tf.keras.models.load_model(model_path)
+    model = tf.keras.models.load_model(
+        model_path,
+        custom_objects={"mobilenet_v2": mobilenet_v2},
+    )
     print(f"[Model] Loaded model from: {model_path}")
     return model
 
 
-def predict_single(model: tf.keras.Model, img: np.ndarray) -> dict[str, float | str]:
+def predict_single(
+    model: tf.keras.Model,
+    img: np.ndarray,
+    disease_threshold: float = DEFAULT_DISEASE_THRESHOLD,
+) -> dict[str, float | str]:
     """
     Run inference on a single preprocessed + segmented image.
     """
     img_batch = np.expand_dims(img, axis=0).astype(np.float32)
     raw_score = float(model.predict(img_batch, verbose=0)[0][0])
 
-    label = "GI Disease" if raw_score >= 0.5 else "Normal"
-    confidence = raw_score if raw_score >= 0.5 else 1.0 - raw_score
+    disease_cutoff = float(np.clip(disease_threshold, 0.01, 0.99))
+
+    if raw_score >= disease_cutoff:
+        label = "GI Disease"
+        result_type = "disease"
+        top_class_score = raw_score
+    else:
+        label = "Normal"
+        result_type = "normal"
+        top_class_score = 1.0 - raw_score
 
     return {
         "label": label,
-        "confidence": round(confidence * 100.0, 2),
+        "result_type": result_type,
+        "top_class_score": round(top_class_score * 100.0, 2),
         "raw_score": round(raw_score, 4),
+        "disease_probability": round(raw_score * 100.0, 2),
+        "normal_score": round((1.0 - raw_score) * 100.0, 2),
+        "threshold": round(disease_cutoff, 4),
+        "disease_threshold": round(disease_cutoff, 4),
     }

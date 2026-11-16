@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "experiment_status": "ready_not_run",
+  "task_config": "configs/task_config.json",
+  "dataset_manifest": "data/manifests/dataset_manifest.csv",
+  "split_manifest": "data/manifests/split_manifest.csv",
+  "input_variants_to_compare": [
+    "raw",
+    "segmented"
+  ],
+  "selection_split": "validation",
+  "locked_test_split": "test",
+  "test_set_policy": "The test split must not be used for training, checkpoint selection, augmentation fitting, hyperparameter selection, or threshold selection. Evaluate it once after the final validation-selected model and threshold are fixed.",
+  "patient_independence_status": "unavailable: patient IDs are absent; duplicate-aware image grouping does not guarantee patient-disjoint evaluation.",
+  "training_and_evaluation_implementation": "Use experiments/manifest_experiments.py and experiments/evaluate_selected.py. Existing training/train.py and evaluation/evaluate.py do not consume this manifest and must not be used as the reproducible baseline."
+}

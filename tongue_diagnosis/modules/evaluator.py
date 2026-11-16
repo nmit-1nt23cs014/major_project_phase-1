@@ -35,6 +35,7 @@ def evaluate_model(
     y_test: np.ndarray,
     class_names: list[str] | None = None,
     save_dir: str | Path = "evaluation",
+    disease_threshold: float = 0.5,
 ) -> dict[str, float]:
     """
     Run the full evaluation flow for a trained model on test data.
@@ -47,7 +48,8 @@ def evaluate_model(
 
     print("\n[Evaluator] Running predictions on test set...")
     y_pred_proba = model.predict(X_test, verbose=0).flatten()
-    y_pred = (y_pred_proba >= 0.5).astype(int)
+    threshold = float(np.clip(disease_threshold, 0.01, 0.99))
+    y_pred = (y_pred_proba >= threshold).astype(int)
 
     accuracy = accuracy_score(y_test, y_pred)
     precision = precision_score(y_test, y_pred, zero_division=0)
@@ -59,6 +61,7 @@ def evaluate_model(
         "precision": round(precision * 100.0, 2),
         "recall": round(recall * 100.0, 2),
         "f1_score": round(f1 * 100.0, 2),
+        "disease_threshold": round(threshold, 4),
     }
 
     print("\n" + "=" * 60)
@@ -68,6 +71,7 @@ def evaluate_model(
     print(f"  Precision : {metrics['precision']}%")
     print(f"  Recall    : {metrics['recall']}%")
     print(f"  F1-Score  : {metrics['f1_score']}%")
+    print(f"  Threshold : {metrics['disease_threshold']}")
     print("=" * 60)
 
     report_text = classification_report(
@@ -87,6 +91,7 @@ def evaluate_model(
         file_obj.write(f"Precision : {metrics['precision']}%\n")
         file_obj.write(f"Recall    : {metrics['recall']}%\n")
         file_obj.write(f"F1-Score  : {metrics['f1_score']}%\n")
+        file_obj.write(f"Threshold : {metrics['disease_threshold']}\n")
         file_obj.write("=" * 60 + "\n\n")
         file_obj.write(report_text)
 
@@ -166,8 +171,11 @@ def plot_metrics_bar(metrics: dict[str, float], save_dir: str | Path) -> None:
     Save a bar chart summarizing the main evaluation metrics.
     """
     save_dir = Path(save_dir)
-    names = list(metrics.keys())
-    values = list(metrics.values())
+    plotted_metrics = {
+        key: value for key, value in metrics.items() if key != "disease_threshold"
+    }
+    names = list(plotted_metrics.keys())
+    values = list(plotted_metrics.values())
     colors = ["steelblue", "darkorange", "mediumseagreen", "tomato"]
 
     fig, ax = plt.subplots(figsize=(8, 5))

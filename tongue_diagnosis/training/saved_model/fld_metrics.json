@@ -1,0 +1,60 @@
+{
+  "task": "fatty_liver_disease_vs_no_fld",
+  "source_dataset": "Tongue-FLD (MFF-TDF/HM-TDF release)",
+  "source_label": "FLD grade 0 is No FLD; grades 1 and 2 are FLD",
+  "input_modalities_used": [
+    "segmented tongue image"
+  ],
+  "input_modalities_not_used": [
+    "gender",
+    "age",
+    "height",
+    "waist",
+    "hipline",
+    "weight",
+    "SBP",
+    "DBP"
+  ],
+  "seed": 42,
+  "split": {
+    "train": 4001,
+    "validation": 858,
+    "test": 858
+  },
+  "validation_threshold_selection": {
+    "criterion": "balanced accuracy, then F1, then closest to 0.5",
+    "threshold": 0.46028118731395773,
+    "metrics": {
+      "threshold": 0.46028118731395773,
+      "accuracy": 0.5874125874125874,
+      "balanced_accuracy": 0.5914402432072963,
+      "f1": 0.5096952908587258,
+      "roc_auc": 0.608202308569257,
+      "tn": 320,
+      "fp": 234,
+      "fn": 120,
+      "tp": 184,
+      "support": 858
+    }
+  },
+  "test_metrics": {
+    "threshold": 0.46028118731395773,
+    "accuracy": 0.5897435897435898,
+    "balanced_accuracy": 0.5850809899296978,
+    "f1": 0.495702005730659,
+    "roc_auc": 0.6242399771993161,
+    "tn": 333,
+    "fp": 221,
+    "fn": 131,
+    "tp": 173,
+    "support": 858
+  },
+  "model": "training\\saved_model\\fld_model.h5",
+  "split_manifest": "data\\manifests\\tongue_fld_split.csv",
+  "limitations": [
+    "Image-only model; the cited study also used eight physiological indicators.",
+    "Image-level split; subject-level independence was not confirmed from the released labels.",
+    "This is an FLD classifier, not a general gastrointestinal-disease classifier.",
+    "Scores are not calibrated clinical probabilities."
+  ]
+}
